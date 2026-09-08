@@ -3,11 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marriage Council Assessment</title>
+  <title>Marriage Council - Mentorship Framework</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-page { background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
+      .print-card { border: 1px solid #ccc !important; page-break-inside: avoid; }
+    }
+  </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
   <div id="root"></div>
@@ -18,7 +26,6 @@
       initializeFirestore, doc, setDoc, deleteDoc, onSnapshot, collection 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Your actual Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBsy2DcwsjWxMUGH_e6-1F4FxVNxFITZf8",
       authDomain: "marriage-council-app.firebaseapp.com",
@@ -30,11 +37,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    
-    // Forcing long-polling bypasses corporate firewall blocks on WebChannels
-    const db = initializeFirestore(app, {
-      experimentalForceLongPolling: true
-    });
+    const db = initializeFirestore(app, { experimentalForceLongPolling: true });
 
     const PROFILES = [
       { id: "u1", name: "Timothy", role: "Best Man", spouseId: "u2", spouseName: "Ciku" },
@@ -43,150 +46,110 @@
       { id: "u4", name: "Christine", role: "Bride", spouseId: "u3", spouseName: "Mugo" }
     ];
 
-    const DEFAULT_QUESTIONS = [
+    const SESSIONS = [
       {
-        id: "q1",
-        category: "Conflict Resolution",
-        text: "When a heated disagreement arises between us, what is your immediate instinct?",
-        options: [
-          { key: "A", label: "Address it immediately, even if emotions are high." },
-          { key: "B", label: "Take time alone to process before discussing calmly." },
-          { key: "C", label: "Concede quickly to keep the peace and move past it." },
-          { key: "D", label: "Seek third-party counsel or mediation." }
-        ]
+        id: 1,
+        title: "Session 1: The Why of Marriage (Purpose)",
+        subthemes: ["Friendship / Partnership", "Sanctification", "Children"]
       },
       {
-        id: "q2",
-        category: "Financial Preferences",
-        text: "If an unexpected financial bonus arrives, what is your primary preference?",
-        options: [
-          { key: "A", label: "Put 100% into long-term savings or investments." },
-          { key: "B", label: "Allocate it for a shared trip or memory-making experience." },
-          { key: "C", label: "Split it 50/50 between savings and personal enjoyment." },
-          { key: "D", label: "Pay off debt or make immediate household upgrades." }
-        ]
+        id: 2,
+        title: "Session 2: The How of Marriage (Design)",
+        subthemes: ["Relationship - Covenant", "Roles - Submission / Love", "Practicality - Love Languages"]
       },
       {
-        id: "q3",
-        category: "In-Law & Extended Family Boundaries",
-        text: "How should major decisions involving extended family or in-laws be handled?",
-        options: [
-          { key: "A", label: "Strict privacy—decide together first before involving family." },
-          { key: "B", label: "Seek advice from elders/parents before finalizing." },
-          { key: "C", label: "Handle each situation on a case-by-case basis." },
-          { key: "D", label: "Allow each spouse to handle their own biological family." }
-        ]
+        id: 3,
+        title: "Session 3: What Goes Wrong (Communication & Conflict)",
+        subthemes: ["Resources - Time & Money", "Family & Society", "Expectations"]
       },
       {
-        id: "q4",
-        category: "Roles & Household Expectations",
-        text: "How should daily household responsibilities be divided?",
-        options: [
-          { key: "A", label: "Strict 50/50 division regardless of working hours." },
-          { key: "B", label: "Flexibly based on whoever has more energy/time that day." },
-          { key: "C", label: "Based on traditional roles or personal strengths." },
-          { key: "D", label: "Outsource chores where feasible to save time." }
-        ]
-      },
-      {
-        id: "q5",
-        category: "Emotional Intimacy & Communication",
-        text: "When you are feeling stressed or overwhelmed, what do you need most from your spouse?",
-        options: [
-          { key: "A", label: "Practical problem-solving and actionable solutions." },
-          { key: "B", label: "Silent presence and physical affection without talking." },
-          { key: "C", label: "A listening ear and emotional validation." },
-          { key: "D", label: "Space to handle it independently." }
-        ]
-      },
-      {
-        id: "q6",
-        category: "Social Life & Personal Space",
-        text: "How much independent social time outside the marriage is healthy?",
-        options: [
-          { key: "A", label: "Minimal—almost all social events should be done together." },
-          { key: "B", label: "Regular independent outings with close friends are essential." },
-          { key: "C", label: "Balanced—1 or 2 solo social events per month." },
-          { key: "D", label: "Spontaneous as individual opportunities arise." }
-        ]
-      },
-      {
-        id: "q7",
-        category: "Parenting & Discipline",
-        text: "When it comes to future parenting and discipline, what is your core philosophy?",
-        options: [
-          { key: "A", label: "Strict structure, clear rules, and firm boundaries." },
-          { key: "B", label: "Gentle, conversational guidance and high flexibility." },
-          { key: "C", label: "United front always—never disagree in front of kids." },
-          { key: "D", label: "Follow the framework we experienced growing up." }
-        ]
-      },
-      {
-        id: "q8",
-        category: "Career & Ambition",
-        text: "If a major career opportunity requires significant overtime or relocation, how do we decide?",
-        options: [
-          { key: "A", label: "Prioritize career growth if the financial yield is high." },
-          { key: "B", label: "Prioritize family stability and decline if it disrupts home life." },
-          { key: "C", label: "Take turns supporting each other's career seasons." },
-          { key: "D", label: "Only proceed if both partners are 100% enthusiastic." }
-        ]
-      },
-      {
-        id: "q9",
-        category: "Spiritual & Values Alignment",
-        text: "How should spiritual or faith practices be structured in our household?",
-        options: [
-          { key: "A", label: "Daily joint devotionals and active community leadership." },
-          { key: "B", label: "Weekly church attendance with personal private faith." },
-          { key: "C", label: "Flexible—let faith express naturally without rigid routines." },
-          { key: "D", label: "Focus primarily on practical moral values over routines." }
-        ]
-      },
-      {
-        id: "q10",
-        category: "Quality Time",
-        text: "What constitutes meaningful quality time for you?",
-        options: [
-          { key: "A", label: "Deep 1-on-1 conversations without screens." },
-          { key: "B", label: "Doing shared activities or hobbies together." },
-          { key: "C", label: "Relaxing in the same room while doing separate things." },
-          { key: "D", label: "Going on planned date nights out of the house." }
-        ]
-      },
-      {
-        id: "q11",
-        category: "Financial Transparency",
-        text: "How should bank accounts and major purchases be managed?",
-        options: [
-          { key: "A", label: "Fully joint accounts—all income combined." },
-          { key: "B", label: "Separate accounts with a joint account for shared bills." },
-          { key: "C", label: "Joint account for everything plus personal allowance accounts." },
-          { key: "D", label: "Consult each other only on purchases over a set amount." }
-        ]
-      },
-      {
-        id: "q12",
-        category: "Apology & Forgiveness",
-        text: "What makes an apology feel sincere to you?",
-        options: [
-          { key: "A", label: "Explicitly stating 'I was wrong' and asking forgiveness." },
-          { key: "B", label: "Demonstrated change in behavior over time." },
-          { key: "C", label: "A thoughtful gesture or act of service to restore harmony." },
-          { key: "D", label: "An immediate, calm explanation of why it happened." }
-        ]
+        id: 4,
+        title: "Session 4: The War For Marriage (How it Lasts)",
+        subthemes: ["Intimacy - The Glue", "Grace - Vulnerability & Forgiveness", "Mission - Faithfulness to Vows"]
       }
+    ];
+
+    const DEFAULT_QUESTIONS = [
+      // SESSION 1: The Why of Marriage (Purpose)
+      // 1. Friendship / Partnership
+      { id: "s1_q1", sessionId: 1, category: "Friendship / Partnership", text: "How do you view your spouse's role as your best friend during busy or demanding seasons?", options: [{key:"A", label:"Primary emotional anchor—we prioritize 1-on-1 time daily."}, {key:"B", label:"Supportive companion—we understand busy schedules without pressure."}, {key:"C", label:"Shared partner—we maintain individual friend circles alongside us."}, {key:"D", label:"Evolving bond—friendship deepens after tasks and duties are handled."}] },
+      { id: "s1_q2", sessionId: 1, category: "Friendship / Partnership", text: "When facing a major personal decision, how early do you involve your partner?", options: [{key:"A", label:"Immediately at the brainstorming stage."}, {key:"B", label:"After I have processed options independently."}, {key:"C", label:"When a concrete path emerges and needs validation."}, {key:"D", label:"Only if the outcome directly impacts household routine."}] },
+      { id: "s1_q3", sessionId: 1, category: "Friendship / Partnership", text: "What activity feels most vital for building long-term partnership?", options: [{key:"A", label:"Shared recreational hobbies and adventures."}, {key:"B", label:"Collaborating on joint goals or ministry projects."}, {key:"C", label:"Deep, unhurried conversations without distractions."}, {key:"D", label:"Serving each other through daily practical tasks."}] },
+      { id: "s1_q4", sessionId: 1, category: "Friendship / Partnership", text: "How should individual hobbies be handled within the partnership?", options: [{key:"A", label:"Encouraged freely to maintain personal identity."}, {key:"B", label:"Merged as much as possible so we share everything."}, {key:"C", label:"Balanced with strict time limits so family comes first."}, {key:"D", label:"Supported as long as budget and family needs allow."}] },
+      // 2. Sanctification
+      { id: "s1_q5", sessionId: 1, category: "Sanctification", text: "When your spouse points out a personal flaw in your character, how do you react?", options: [{key:"A", label:"Receive it openly as an opportunity for spiritual growth."}, {key:"B", label:"Initially feel defensive, but process it constructively later."}, {key:"C", label:"Request specific examples before agreeing."}, {key:"D", label:"Prefer to deal with personal character growth privately."}] },
+      { id: "s1_q6", sessionId: 1, category: "Sanctification", text: "What is the ultimate purpose of conflict within a Christian marriage?", options: [{key:"A", label:"Exposing personal self-centeredness to grow in humility."}, {key:"B", label:"Learning practical compromise and communication tools."}, {key:"C", label:"Strengthening trust after overcoming hard moments."}, {key:"D", label:"Establishing order and clear boundaries."}] },
+      { id: "s1_q7", sessionId: 1, category: "Sanctification", text: "How do you encourage spiritual growth in your spouse without becoming preachy?", options: [{key:"A", label:"By modeling personal devotion and quiet faithfulness."}, {key:"B", label:"Initiating joint prayer and scripture reading gently."}, {key:"C", label:"Asking thoughtful questions about what they are learning."}, {key:"D", label:"Attending church and spiritual retreats together."}] },
+      { id: "s1_q8", sessionId: 1, category: "Sanctification", text: "How should difficult trials or disappointments be framed spiritually?", options: [{key:"A", label:"Refiner's fire meant to purify and refine our character."}, {key:"B", label:"Challenges to be solved with practical action and prayer."}, {key:"C", label:"Tests of endurance to be navigated side-by-side."}, {key:"D", label:"Reminders to rely more heavily on community and elders."}] },
+      // 3. Children
+      { id: "s1_q9", sessionId: 1, category: "Children", text: "What is the primary spiritual goal of raising children in your home?", options: [{key:"A", label:"Discipling them to love God and serve others authentically."}, {key:"B", label:"Providing a secure, loving environment for personal growth."}, {key:"C", label:"Instilling discipline, moral values, and respect."}, {key:"D", label:"Helping them identify and fulfill their unique callings."}] },
+      { id: "s1_q10", sessionId: 1, category: "Children", text: "How will the marital relationship rank once children arrive?", options: [{key:"A", label:"Always first—a strong marriage is the best gift to kids."}, {key:"B", label:"Equal priority—child needs and spouse needs shift daily."}, {key:"C", label:"Children come first during infant/toddler years, then shift."}, {key:"D", label:"Driven by family needs without rigid ranking."}] },
+      { id: "s1_q11", sessionId: 1, category: "Children", text: "How do you view the timeline and family size planning?", options: [{key:"A", label:"Strictly planned based on financial and readiness goals."}, {key:"B", label:"Open and flexible, surrendering timing entirely to God."}, {key:"C", label:"Decided incrementally after each child arrives."}, {key:"D", label:"Guided primarily by extended family context and wisdom."}] },
+      { id: "s1_q12", sessionId: 1, category: "Children", text: "In the event of infertility or delays in having children, what is your mindset?", options: [{key:"A", label:"Pursue medical/adoption paths with complete unity."}, {key:"B", label:"Focus fully on our couple mission and marriage purpose."}, {key:"C", label:"Take extended time for prayer before deciding next steps."}, {key:"D", label:"Seek spiritual counseling and medical advice immediately."}] },
+
+      // SESSION 2: The How of Marriage (Design)
+      // 1. Relationship -- Covenant
+      { id: "s2_q1", sessionId: 2, category: "Relationship - Covenant", text: "What does viewing marriage as a 'Covenant' vs. a 'Contract' mean in daily practice?", options: [{key:"A", label:"Unconditional commitment regardless of changing feelings or performance."}, {key:"B", label:"A sacred promise witnessed by God and community requiring total effort."}, {key:"C", label:"A binding legal and spiritual agreement prioritizing family legacy."}, {key:"D", label:"A covenant of grace where forgiveness is given endlessly."}] },
+      { id: "s2_q2", sessionId: 2, category: "Relationship - Covenant", text: "How is the word 'divorce' treated in your marital vocabulary?", options: [{key:"A", label:"Completely off-limits—never mentioned, even in heated fights."}, {key:"B", label:"An absolute last resort only in biblical grounds."}, {key:"C", label:"A serious word that requires instant de-escalation if uttered."}, {key:"D", label:"A reality we prevent through continuous proactive work."}] },
+      { id: "s2_q3", sessionId: 2, category: "Relationship - Covenant", text: "When difficult seasons test the relationship, what holds the marriage together?", options: [{key:"A", label:"Vows and covenant commitment made before God."}, {key:"B", label:"Deep foundational friendship and history."}, {key:"C", label:"External counsel, mentors, and spiritual accountability."}, {key:"D", label:"Determination to work through practical problems."}] },
+      { id: "s2_q4", sessionId: 2, category: "Relationship - Covenant", text: "How do you define faithfulness beyond physical fidelity?", options: [{key:"A", label:"Guarding emotional boundaries with friends/colleagues."}, {key:"B", label:"Protecting my spouse's honor in public and private speech."}, {key:"C", label:"Transparency in finances, thoughts, and digital devices."}, {key:"D", label:"All of the above combined equal covenant fidelity."}] },
+      // 2. Roles -- Submission / Love
+      { id: "s2_q5", sessionId: 2, category: "Roles - Submission / Love", text: "How do you understand biblical headship and servant leadership?", options: [{key:"A", label:"Sacrificial service and taking ultimate responsibility for family wellbeing."}, {key:"B", label:"Equal partnership where decisions require mutual consensus."}, {key:"C", label:"Final decision-maker when agreement cannot be reached."}, {key:"D", label:"Leading spiritually while sharing operational tasks equally."}] },
+      { id: "s2_q6", sessionId: 2, category: "Roles - Submission / Love", text: "What does mutual submission look like when both spouses disagree strongly?", options: [{key:"A", label:"Yielding out of reverence for Christ and respect for the other."}, {key:"B", label:"Pausing decisions until both reach a comfortable consensus."}, {key:"C", label:"Wife yields after thorough discussion and input."}, {key:"D", label:"Husband sacrifices personal preference for wife's preference."}] },
+      { id: "s2_q7", sessionId: 2, category: "Roles - Submission / Love", text: "How should leadership in spiritual life (prayer, devotion) be initiated?", options: [{key:"A", label:"Husband takes active lead in setting the rhythm."}, {key:"B", label:"Whichever spouse has higher initiative takes the lead."}, {key:"C", label:"Shared effort—alternating days or responsibilities."}, {key: "D", label:"Spontaneous based on spiritual seasons."}] },
+      { id: "s2_q8", sessionId: 2, category: "Roles - Submission / Love", text: "How are leadership roles expressed in household and financial management?", options: [{key:"A", label:"Based purely on natural skills regardless of traditional roles."}, {key:"B", label:"Husband oversees macro strategy, wife manages micro execution."}, {key:"C", label:"Equal split with assigned domains of ultimate authority."}, {key:"D", label:"Rotated periodically to share burdens."}] },
+      // 3. Practicality -- Love Languages
+      { id: "s2_q9", sessionId: 2, category: "Practicality - Love Languages", text: "Which love language makes you feel most valued and secure?", options: [{key:"A", label:"Words of Affirmation (encouragement, appreciation)."}, {key:"B", label:"Acts of Service (practical help, thoughtful actions)."}, {key:"C", label:"Quality Time (undivided attention, shared experiences)."}, {key:"D", label:"Physical Touch or Receiving Gifts."}] },
+      { id: "s2_q10", sessionId: 2, category: "Practicality - Love Languages", text: "How do you adapt when your spouse's love language does not come naturally to you?", options: [{key:"A", label:"Intentionally study and practice it as a discipline of love."}, {key:"B", label:"Communicate my effort and ask for clear guidance."}, {key:"C", label:"Find creative middle ground that works for both."}, {key:"D", label:"Rely on open reminders when tank feels low."}] },
+      { id: "s2_q11", sessionId: 2, category: "Practicality - Love Languages", text: "How do you show love when you are exhausted or stressed?", options: [{key:"A", label:"Small acts of service despite low energy."}, {key:"B", label:"Verbal assurances that stress isn't caused by them."}, {key:"C", label:"Physical closeness or quiet quality time."}, {key:"D", label:"Asking for grace while I recharge briefly."}] },
+      { id: "s2_q12", sessionId: 2, category: "Practicality - Love Languages", text: "How often should emotional needs and 'love tanks' be checked in on?", options: [{key:"A", label:"Weekly during a structured mini marriage check-in."}, {key:"B", label:"Naturally during daily informal conversations."}, {key:"C", label:"Whenever tension or distance is sensed."}, {key:"D", label:"Monthly during date nights."}] },
+
+      // SESSION 3: What Goes Wrong (Communication & Conflict Management)
+      // 1. Resources - Time & Money
+      { id: "s3_q1", sessionId: 3, category: "Resources - Time & Money", text: "How should discretionary spending beyond necessary bills be handled?", options: [{key:"A", label:"Strict spending limit—anything above $100 requires mutual agreement."}, {key:"B", label:"Personal monthly allowances given to each spouse with zero oversight."}, {key:"C", label:"Open budget discussed monthly with complete transparency."}, {key:"D", label:"Flexible approach as long as savings targets are met."}] },
+      { id: "s3_q2", sessionId: 3, category: "Resources - Time & Money", text: "What is your philosophy on financial debt (credit cards, loans, investments)?", options: [{key:"A", label:"Zero debt tolerance except for primary mortgage."}, {key:"B", label:"Strategic debt acceptable for investments/business growth."}, {key:"C", label:"Manageable debt ok if monthly cashflow comfortably covers it."}, {key:"D", label:"Decided together depending on opportunity and risk."}] },
+      { id: "s3_q3", sessionId: 3, category: "Resources - Time & Money", text: "How do you balance demanding work schedules with quality time at home?", options: [{key:"A", label:"Strict boundary—work stops completely at a set evening hour."}, {key:"B", label:"Work season flexibility—heavy seasons balanced by downtime later."}, {key:"C", label:"Prioritize weekends while work week remains intense."}, {key:"D", label:"Ongoing negotiation based on career demands."}] },
+      { id: "s3_q4", sessionId: 3, category: "Resources - Time & Money", text: "How should charitable giving / tithing be managed?", options: [{key:"A", label:"Non-negotiable 10% tithe plus additional giving off top."}, {key:"B", label:"Proportional giving agreed upon during budget reviews."}, {key:"C", label:"Spontaneous giving based on identified needs and capacity."}, {key:"D", label:"Individual discretion over personal budget portions."}] },
+      // 2. Family and Society - In-Laws; Relatives; Friends; Church
+      { id: "s3_q5", sessionId: 3, category: "Family & Society", text: "When in-law opinions conflict with a decision you and your spouse made, what happens?", options: [{key:"A", label:"Stand firm as a united couple—biological child communicates the boundary."}, {key:"B", label:"Listen respectfully, re-evaluate, but make ultimate decision together."}, {key:"C", label:"Compromise to keep peace with extended family if possible."}, {key:"D", label:"Defer to elder wisdom on traditional or family matters."}] },
+      { id: "s3_q6", sessionId: 3, category: "Family & Society", text: "How often should extended family visits or holidays be scheduled?", options: [{key:"A", label:"Equal split between both families with clear time limits."}, {key:"B", label:"Prioritize nuclear family traditions first, then visit extended family."}, {key:"C", label:"Flexible based on proximity and family events."}, {key:"D", label:"Decided annually during holiday planning."}] },
+      { id: "s3_q7", sessionId: 3, category: "Family & Society", text: "What boundary is necessary regarding discussing marital issues with outside friends?", options: [{key:"A", label:"Strict privacy—marital issues shared ONLY with mentors/counselors."}, {key:"B", label:"Close trusted same-gender friends can be consulted for support."}, {key:"C", label:"General discussion ok, but keep intimate details private."}, {key:"D", label:"Only shared if both spouses consent beforehand."}] },
+      { id: "s3_q8", sessionId: 3, category: "Family & Society", text: "How integrated should your local church community be in your marriage support?", options: [{key:"A", label:"High integration—active in home group and formal mentorship."}, {key:"B", label:"Moderate—regular attendance with selective deep relationships."}, {key:"C", label:"Private spiritual life with church primarily for worship."}, {key:"D", label:"Involved as family schedule permits."}] },
+      // 3. Expectations
+      { id: "s3_q9", sessionId: 3, category: "Expectations", text: "When implicit expectations (unspoken desires) are let down, how do you handle it?", options: [{key:"A", label:"Realize it was unspoken, express it calmly, and adjust expectations."}, {key:"B", label:"Feel hurt/disappointed initially, leading to silent withdrawal."}, {key:"C", label:"Bring it up during the next conflict or review."}, {key:"D", label:"Write it off as an unfulfilled wish and move on."}] },
+      { id: "s3_q10", sessionId: 3, category: "Expectations", text: "How do you view domestic standards (cleanliness, order, cooking)?", options: [{key:"A", label:"High order required—cleanliness impacts emotional peace."}, {key:"B", label:"Moderate—functional tidiness over perfection."}, {key:"C", label:"Relaxed—people and rest matter far more than chores."}, {key:"D", label:"Outsourced or systematically divided to avoid friction."}] },
+      { id: "s3_q11", sessionId: 3, category: "Expectations", text: "What expectation exists regarding romantic gestures and special occasions?", options: [{key:"A", label:"High expectation—birthdays/anniversaries require deliberate effort."}, {key:"B", label:"Low expectation—daily appreciation matters more than big events."}, {key:"C", label:"Shared planning—we decide together what to do."}, {key:"D", label:"Simple, budget-conscious celebrations."}] },
+      { id: "s3_q12", sessionId: 3, category: "Expectations", text: "When facing unexpected lifestyle changes (income drop, health issue), how do you adapt?", options: [{key:"A", label:"Immediate team meeting to recalibrate expectations and budget."}, {key:"B", label:"Lean heavily on faith and prayer while staying positive."}, {key:"C", label:"Rely on spouse to lead adaptation strategy."}, {key:"D", label:"Seek support from broader family/mentors."}] },
+
+      // SESSION 4: The War For Marriage (How it Lasts)
+      // 1. Intimacy - The Glue
+      { id: "s4_q1", sessionId: 4, category: "Intimacy - The Glue", text: "How should frequency and initiative in physical intimacy be navigated?", options: [{key:"A", label:"Open, comfortable dialogue where both feel safe to initiate."}, {key:"B", label:"Prioritized consistently as vital glue, even when tired."}, {key:"C", label:"Spontaneous and driven by emotional closeness."}, {key:"D", label:"Navigated with patience during changing life seasons."}] },
+      { id: "s4_q2", sessionId: 4, category: "Intimacy - The Glue", text: "What is the primary foundation for deep sexual intimacy in marriage?", options: [{key:"A", label:"Emotional safety, trust, and vulnerability built out of bed."}, {key:"B", label:"Physical attraction and deliberate romance."}, {key:"C", label:"Unselfish service to meeting spouse's needs."}, {key:"D", label:"Fun, playfulness, and open communication."}] },
+      { id: "s4_q3", sessionId: 4, category: "Intimacy - The Glue", text: "When physical or emotional intimacy feels dry, what is your first response?", options: [{key:"A", label:"Initiate an honest, gentle heart-to-heart discussion."}, {key:"B", label:"Plan a date night or getaway to reconnect."}, {key:"C", label:"Focus on serving my spouse in practical ways first."}, {key:"D", label:"Seek guidance from marital resources or mentors."}] },
+      { id: "s4_q4", sessionId: 4, category: "Intimacy - The Glue", text: "How do you protect emotional intimacy from busy schedules?", options: [{key:"A", label:"Non-negotiable daily 15-minute screen-free catch up."}, {key:"B", label:"Weekly date night protected from work or family obligations."}, {key:"C", label:"Frequent text check-ins and affectionate words through the day."}, {key:"D", label:"Weekend morning downtime together."}] },
+      // 2. Grace - Vulnerability and Forgiveness
+      { id: "s4_q5", sessionId: 4, category: "Grace - Vulnerability & Forgiveness", text: "When you hurt your spouse, what does genuine repentance look like?", options: [{key:"A", label:"Acknowledging specific harm, owning mistake without excuses, asking forgiveness."}, {key:"B", label:"Immediate apology followed by changed behavior over time."}, {key:"C", label:"Making restitution through acts of service and affection."}, {key:"D", label:"Calmly discussing what happened and agreeing on preventions."}] },
+      { id: "s4_q6", sessionId: 4, category: "Grace - Vulnerability & Forgiveness", text: "How do you handle holding past offenses during current arguments?", options: [{key:"A", label:"Strict rule—past forgiven issues are never resurrected as weapons."}, {key:"B", label:"Occasionally resurfaces if pattern remains unaddressed."}, {key:"C", label:"Requires active prayer and conscious choice to let go."}, {key:"D", label:"Brought to mentorship if unresolved patterns return."}] },
+      { id: "s4_q7", sessionId: 4, category: "Grace - Vulnerability & Forgiveness", text: "What level of vulnerability regarding personal fears and insecurities do you expect?", options: [{key:"A", label:"Total transparency—sharing deep fears and emotional weaknesses."}, {key:"B", label:"Gradual sharing as trust and safety deepen over years."}, {key:"C", label:"Focus on strengths while managing personal fears constructively."}, {key:"D", label:"Shared as needed during major life events."}] },
+      { id: "s4_q8", sessionId: 4, category: "Grace - Vulnerability & Forgiveness", text: "What does extending grace mean when your spouse experiences personal failure?", options: [{key:"A", label:"Providing unconditional support and safe refuge without judgment."}, {key:"B", label:"Offering gentle accountability coupled with practical help."}, {key:"C", label:"Giving them space to recover while carrying extra load."}, {key:"D", label:"Praying together and seeking restoration."}] },
+      // 3. Mission - faithfulness to our vows
+      { id: "s4_q9", sessionId: 4, category: "Mission - Faithfulness to Vows", text: "What is the overarching mission or 'calling' of your marriage?", options: [{key:"A", label:"Building a godly legacy and serving our church/community together."}, {key:"B", label:"Creating a safe, joyful home that offers hospitality to others."}, {key:"C", label:"Supporting each other's individual callings to maximum impact."}, {key:"D", label:"Living faithfully and honorably as a witness to Christ."}] },
+      { id: "s4_q10", sessionId: 4, category: "Mission - Faithfulness to Vows", text: "How will hospitality and serving others fit into your home life?", options: [{key:"A", label:"Regularly opening our home for meals, ministry, and fellowship."}, {key:"B", label:"Selective hospitality—protecting home as a private sanctuary."}, {key:"C", label:"Serving outside the home in community organizations together."}, {key:"D", label:"Spontaneous hostings based on seasonal capacity."}] },
+      { id: "s4_q11", sessionId: 4, category: "Mission - Faithfulness to Vows", text: "How do you ensure long-term faithfulness to your marriage vows over decades?", options: [{key:"A", label:"Continuous investment—mentorship, retreats, and spiritual growth."}, {key:"B", label:"Rigid personal boundaries with opposite sex and financial transparency."}, {key:"C", label:"Nurturing friendship and fun so marriage stays vibrant."}, {key:"D", label:"Unwavering reliance on God's grace through daily prayer."}] },
+      { id: "s4_q12", sessionId: 4, category: "Mission - Faithfulness to Vows", text: "When evaluating your marriage progress annually, what indicator matters most?", options: [{key:"A", label:"Depth of spiritual unity and character growth in both."}, {key:"B", label:"Level of joy, peace, and laughter in our daily home atmosphere."}, {key:"C", label:"Financial stability and achievement of joint life goals."}, {key:"D", label:"Strength of our relationship with kids and community."}] }
     ];
 
     function App() {
       const [view, setView] = React.useState("select_user");
       const [currentUser, setCurrentUser] = React.useState(null);
+      const [activeSessionId, setActiveSessionId] = React.useState(1);
       const [stage, setStage] = React.useState(1);
       const [questions, setQuestions] = React.useState([]);
       const [currentQIndex, setCurrentQIndex] = React.useState(0);
       const [answers, setAnswers] = React.useState({});
       const [allResponses, setAllResponses] = React.useState([]);
       const [isSubmitted, setIsSubmitted] = React.useState(false);
+      const [selectedCouplePrint, setSelectedCouplePrint] = React.useState("u3_u4"); // Default Groom/Bride
 
       React.useEffect(() => {
         const unsubResponses = onSnapshot(collection(db, "responses"), (snapshot) => {
@@ -196,34 +159,43 @@
         const unsubQuestions = onSnapshot(collection(db, "questions"), async (snapshot) => {
           const qData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
           if (qData.length === 0) {
-            for (const q of DEFAULT_QUESTIONS) {
-              await setDoc(doc(db, "questions", q.id), q);
-            }
+            await seedQuestions();
           } else {
-            setQuestions(qData.sort((a,b) => a.id.localeCompare(b.id, undefined, {numeric: true})));
+            setQuestions(qData);
           }
         });
 
         return () => { unsubResponses(); unsubQuestions(); };
       }, []);
 
+      const seedQuestions = async () => {
+        for (const q of DEFAULT_QUESTIONS) {
+          await setDoc(doc(db, "questions", q.id), q);
+        }
+      };
+
+      const sessionQuestions = questions
+        .filter((q) => q.sessionId === activeSessionId)
+        .sort((a,b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+
       const handleSelectOption = (key) => {
-        setAnswers({ ...answers, [questions[currentQIndex].id]: key });
+        if (!sessionQuestions[currentQIndex]) return;
+        setAnswers({ ...answers, [sessionQuestions[currentQIndex].id]: key });
       };
 
       const handleNextQuestion = async () => {
-        const docId = `${currentUser.id}_stage${stage}`;
+        const docId = `${currentUser.id}_s${activeSessionId}_stage${stage}`;
         
-        // Save in background so UI never freezes
         setDoc(doc(db, "responses", docId), {
           userId: currentUser.id,
           userName: currentUser.name,
+          sessionId: activeSessionId,
           stage: stage,
           answers: answers,
           updatedAt: new Date().toISOString()
         }, { merge: true }).catch(e => console.error(e));
 
-        if (currentQIndex < questions.length - 1) {
+        if (currentQIndex < sessionQuestions.length - 1) {
           setCurrentQIndex(prev => prev + 1);
         } else {
           if (stage === 1) {
@@ -236,54 +208,106 @@
         }
       };
 
+      // SELECT USER SCREEN
       if (view === "select_user") {
         return (
-          <div className="p-6 max-w-md mx-auto text-center space-y-6 pt-12">
-            <h1 className="text-3xl font-extrabold text-blue-400">Marriage Council</h1>
-            <p className="text-slate-400 text-sm">Select your profile to begin the assessment:</p>
-            <div className="space-y-3">
+          <div className="p-6 max-w-xl mx-auto text-center space-y-6 pt-10">
+            <div>
+              <h1 className="text-3xl font-extrabold text-blue-400">Marriage Council</h1>
+              <p className="text-slate-400 text-sm mt-1">4-Session Pre-Marital Mentorship Engine</p>
+            </div>
+
+            <div className="p-4 bg-slate-800/80 rounded-xl border border-slate-700 text-left space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">1. Choose Mentorship Session:</label>
+              <select 
+                value={activeSessionId} 
+                onChange={(e) => setActiveSessionId(Number(e.target.value))}
+                className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-semibold focus:border-blue-500 focus:outline-none"
+              >
+                {SESSIONS.map((s) => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-3 text-left">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">2. Select Your Profile:</label>
               {PROFILES.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { setCurrentUser(p); setView("quiz"); setStage(1); setCurrentQIndex(0); setAnswers({}); setIsSubmitted(false); }}
-                  className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-left flex justify-between items-center transition"
+                  onClick={() => { 
+                    setCurrentUser(p); 
+                    setView("quiz"); 
+                    setStage(1); 
+                    setCurrentQIndex(0); 
+                    setAnswers({}); 
+                    setIsSubmitted(false); 
+                  }}
+                  className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-left flex justify-between items-center transition group"
                 >
                   <div>
-                    <div className="font-bold text-lg text-white">{p.name}</div>
-                    <div className="text-xs text-slate-400">{p.role}</div>
+                    <div className="font-bold text-lg text-white group-hover:text-blue-300 transition">{p.name}</div>
+                    <div className="text-xs text-slate-400">{p.role} • Partner: {p.spouseName}</div>
                   </div>
-                  <span className="text-blue-400 text-sm font-semibold">Start →</span>
+                  <span className="text-blue-400 text-sm font-semibold">Start Session {activeSessionId} →</span>
                 </button>
               ))}
             </div>
-            <button 
-              onClick={() => setView("dashboard")}
-              className="mt-8 text-xs text-slate-500 underline hover:text-slate-300"
-            >
-              Open Best Man Dashboard
-            </button>
+
+            <div className="pt-6 border-t border-slate-800 flex justify-between items-center text-xs">
+              <button 
+                onClick={() => setView("dashboard")}
+                className="text-slate-400 underline hover:text-white font-medium"
+              >
+                Open Best Man Dashboard
+              </button>
+              <button 
+                onClick={() => setView("print_summary")}
+                className="text-blue-400 underline hover:text-blue-300 font-medium"
+              >
+                Printable Summaries
+              </button>
+            </div>
           </div>
         );
       }
 
+      // BEST MAN DASHBOARD SCREEN
       if (view === "dashboard") {
+        const currentSessionInfo = SESSIONS.find(s => s.id === activeSessionId);
+
         return (
-          <div className="p-6 max-w-4xl mx-auto space-y-6">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-4">
+          <div className="p-6 max-w-5xl mx-auto space-y-6 no-print">
+            <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-slate-700 pb-4 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-blue-400">Best Man Dashboard</h1>
-                <p className="text-xs text-slate-400">Live Assessment Tracking</p>
+                <p className="text-xs text-slate-400">Live Assessment Analytics & Discussion Guide</p>
               </div>
-              <button onClick={() => setView("select_user")} className="px-4 py-2 bg-slate-800 text-xs rounded-lg border border-slate-700 hover:bg-slate-700">Exit Dashboard</button>
+
+              <div className="flex items-center gap-3">
+                <select 
+                  value={activeSessionId} 
+                  onChange={(e) => setActiveSessionId(Number(e.target.value))}
+                  className="p-2 bg-slate-800 border border-slate-700 rounded-lg text-xs font-bold text-blue-300 focus:outline-none"
+                >
+                  {SESSIONS.map((s) => (
+                    <option key={s.id} value={s.id}>Session {s.id}: {s.title.split(':')[1]}</option>
+                  ))}
+                </select>
+
+                <button onClick={() => setView("print_summary")} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition">Print Summaries</button>
+                <button onClick={() => setView("select_user")} className="px-3 py-2 bg-slate-800 text-xs rounded-lg border border-slate-700 hover:bg-slate-700">Exit</button>
+              </div>
             </div>
 
+            {/* Profile Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {PROFILES.map((p) => {
-                const s1 = allResponses.find((r) => r.userId === p.id && r.stage === 1);
-                const s2 = allResponses.find((r) => r.userId === p.id && r.stage === 2);
+                const s1 = allResponses.find((r) => r.userId === p.id && r.sessionId === activeSessionId && r.stage === 1);
+                const s2 = allResponses.find((r) => r.userId === p.id && r.sessionId === activeSessionId && r.stage === 2);
+                const spouseResp = allResponses.find((r) => r.userId === p.spouseId && r.sessionId === activeSessionId && r.stage === 1);
                 
                 let score = null;
-                const spouseResp = allResponses.find((r) => r.userId === p.spouseId && r.stage === 1);
                 if (s2 && spouseResp) {
                   let matches = 0;
                   let total = 0;
@@ -305,8 +329,8 @@
                       </div>
                       {score !== null && (
                         <div className="text-right">
-                          <div className="text-xl font-black text-emerald-400">{score}%</div>
-                          <div className="text-[10px] text-slate-400">Predict Accuracy</div>
+                          <div className={`text-xl font-black ${score >= 70 ? 'text-emerald-400' : score >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>{score}%</div>
+                          <div className="text-[10px] text-slate-400">Prediction Accuracy</div>
                         </div>
                       )}
                     </div>
@@ -324,15 +348,191 @@
 
                     <button 
                       onClick={async () => {
-                        if (confirm(`Reset all responses for ${p.name}?`)) {
-                          await deleteDoc(doc(db, "responses", `${p.id}_stage1`));
-                          await deleteDoc(doc(db, "responses", `${p.id}_stage2`));
+                        if (confirm(`Reset Session ${activeSessionId} responses for ${p.name}?`)) {
+                          await deleteDoc(doc(db, "responses", `${p.id}_s${activeSessionId}_stage1`));
+                          await deleteDoc(doc(db, "responses", `${p.id}_s${activeSessionId}_stage2`));
                         }
                       }}
-                      className="w-full mt-2 py-1.5 bg-rose-900/30 text-rose-300 hover:bg-rose-900/50 border border-rose-800 rounded-lg text-xs transition"
+                      className="w-full mt-2 py-1 bg-rose-900/30 text-rose-300 hover:bg-rose-900/50 border border-rose-800 rounded text-xs transition"
                     >
-                      Reset Progress
+                      Reset Session {activeSessionId} Progress
                     </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* MISMATCH & DISCUSSION GUIDE ENGINE */}
+            <div className="p-5 bg-slate-800 rounded-xl border border-slate-700 space-y-4">
+              <h2 className="text-lg font-bold text-blue-300">Session {activeSessionId} - Interactive Discussion & Mismatch Guide</h2>
+              <p className="text-xs text-slate-400">This guide auto-detects where couples predicted incorrectly about each other for Session {activeSessionId}.</p>
+
+              {["u3_u4", "u1_u2"].map((pairKey) => {
+                const [p1Id, p2Id] = pairKey.split("_");
+                const p1 = PROFILES.find(p => p.id === p1Id);
+                const p2 = PROFILES.find(p => p.id === p2Id);
+
+                const p1_s1 = allResponses.find(r => r.userId === p1.id && r.sessionId === activeSessionId && r.stage === 1);
+                const p1_s2 = allResponses.find(r => r.userId === p1.id && r.sessionId === activeSessionId && r.stage === 2);
+                const p2_s1 = allResponses.find(r => r.userId === p2.id && r.sessionId === activeSessionId && r.stage === 1);
+                const p2_s2 = allResponses.find(r => r.userId === p2.id && r.sessionId === activeSessionId && r.stage === 2);
+
+                const sessQs = questions.filter(q => q.sessionId === activeSessionId);
+
+                return (
+                  <div key={pairKey} className="space-y-3 pt-3 border-t border-slate-700">
+                    <h3 className="font-bold text-white text-md flex items-center gap-2">
+                      <span>👩‍❤️‍👨 Couple: {p1.name} & {p2.name}</span>
+                    </h3>
+
+                    {(!p1_s1 || !p2_s1) ? (
+                      <p className="text-xs text-amber-400 italic">Both partners must complete Stage 1 to unlock mismatch analysis.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {sessQs.map((q) => {
+                          const p1Self = p1_s1?.answers[q.id];
+                          const p2Self = p2_s2 ? p2_s1?.answers[q.id] : p2_s1?.answers[q.id];
+                          const p1PredP2 = p1_s2?.answers[q.id];
+                          const p2PredP1 = p2_s2?.answers[q.id];
+
+                          const p1PredCorrect = p1PredP2 && p1PredP2 === p2Self;
+                          const p2PredCorrect = p2PredP1 && p2PredP1 === p1Self;
+                          const directSelfMatch = p1Self && p2Self && p1Self === p2Self;
+
+                          const opt1 = q.options.find(o => o.key === p1Self)?.label;
+                          const opt2 = q.options.find(o => o.key === p2Self)?.label;
+
+                          return (
+                            <div key={q.id} className="p-3 bg-slate-900/90 rounded-lg border border-slate-750 text-xs space-y-2">
+                              <div className="flex justify-between font-semibold text-blue-400">
+                                <span>{q.category}: {q.text}</span>
+                                {directSelfMatch ? (
+                                  <span className="text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">Perfect Self-Alignment</span>
+                                ) : (
+                                  <span className="text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800">Differing Perspectives</span>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-300 pt-1">
+                                <div className="p-2 bg-slate-800/60 rounded">
+                                  <div className="font-bold text-white">{p1.name}'s Choice: <span className="text-blue-300">{p1Self || "N/A"}</span></div>
+                                  <div className="text-[11px] text-slate-400">{opt1}</div>
+                                  {p2PredP1 && (
+                                    <div className={`mt-1 text-[10px] font-semibold ${p2PredCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                      {p2.name} predicted: {p2PredP1} ({p2PredCorrect ? 'Correct' : 'Incorrect'})
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="p-2 bg-slate-800/60 rounded">
+                                  <div className="font-bold text-white">{p2.name}'s Choice: <span className="text-blue-300">{p2Self || "N/A"}</span></div>
+                                  <div className="text-[11px] text-slate-400">{opt2}</div>
+                                  {p1PredP2 && (
+                                    <div className={`mt-1 text-[10px] font-semibold ${p1PredCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                      {p1.name} predicted: {p1PredP2} ({p1PredCorrect ? 'Correct' : 'Incorrect'})
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ADMIN TOOLS */}
+            <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+              <span className="text-slate-400 font-semibold">Admin Tools:</span>
+              <button 
+                onClick={async () => {
+                  if (confirm("Re-seed default questions into database? This preserves responses.")) {
+                    await seedQuestions();
+                    alert("Database questions updated successfully!");
+                  }
+                }}
+                className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-white font-medium"
+              >
+                Reset/Seed Default Questions
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // PRINTABLE SUMMARY SHEET SCREEN
+      if (view === "print_summary") {
+        const [p1Id, p2Id] = selectedCouplePrint.split("_");
+        const p1 = PROFILES.find(p => p.id === p1Id);
+        const p2 = PROFILES.find(p => p.id === p2Id);
+
+        return (
+          <div className="p-6 max-w-4xl mx-auto space-y-6">
+            <div className="no-print flex justify-between items-center border-b border-slate-700 pb-4">
+              <div>
+                <h1 className="text-xl font-bold text-blue-400">Printable Mentorship Summary</h1>
+                <p className="text-xs text-slate-400">Generate clean report cards for live counseling sessions.</p>
+              </div>
+
+              <div className="flex gap-2">
+                <select 
+                  value={selectedCouplePrint} 
+                  onChange={(e) => setSelectedCouplePrint(e.target.value)}
+                  className="p-2 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-white"
+                >
+                  <option value="u3_u4">Groom & Bride (Mugo & Christine)</option>
+                  <option value="u1_u2">Best Man & MOH (Timothy & Ciku)</option>
+                </select>
+                <button onClick={() => window.print()} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded text-xs">🖨 Print / Export PDF</button>
+                <button onClick={() => setView("select_user")} className="px-3 py-2 bg-slate-800 text-xs rounded border border-slate-700">Back</button>
+              </div>
+            </div>
+
+            {/* PRINT PAGE AREA */}
+            <div className="print-page p-8 bg-slate-800 rounded-xl border border-slate-700 space-y-6 text-slate-100">
+              <div className="border-b border-slate-600 pb-4 text-center space-y-1">
+                <h1 className="text-2xl font-black uppercase tracking-wider text-blue-400">Marriage Council Summary Report</h1>
+                <p className="text-sm font-semibold">Couple: {p1.name} ({p1.role}) & {p2.name} ({p2.role})</p>
+                <p className="text-xs text-slate-400">Generated on: {new Date().toLocaleDateString()}</p>
+              </div>
+
+              {SESSIONS.map((sess) => {
+                const sessQs = questions.filter(q => q.sessionId === sess.id);
+                const p1_s1 = allResponses.find(r => r.userId === p1.id && r.sessionId === sess.id && r.stage === 1);
+                const p2_s1 = allResponses.find(r => r.userId === p2.id && r.sessionId === sess.id && r.stage === 1);
+
+                return (
+                  <div key={sess.id} className="space-y-3 print-card p-4 bg-slate-800/40 rounded-lg border border-slate-700">
+                    <h2 className="text-base font-bold text-blue-300 border-b border-slate-700 pb-1">{sess.title}</h2>
+                    
+                    <div className="space-y-2 text-xs">
+                      {sessQs.map((q) => {
+                        const a1 = p1_s1?.answers[q.id];
+                        const a2 = p2_s1?.answers[q.id];
+                        const match = a1 && a2 && a1 === a2;
+
+                        const opt1 = q.options.find(o => o.key === a1)?.label;
+                        const opt2 = q.options.find(o => o.key === a2)?.label;
+
+                        return (
+                          <div key={q.id} className="p-2 bg-slate-900/60 rounded border border-slate-800">
+                            <div className="font-semibold flex justify-between text-slate-200">
+                              <span>{q.category}: {q.text}</span>
+                              <span className={match ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                                {match ? "Aligned" : "Different"}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mt-1 text-[11px] text-slate-400">
+                              <div><strong>{p1.name}:</strong> ({a1 || "N/A"}) {opt1 || "Not answered"}</div>
+                              <div><strong>{p2.name}:</strong> ({a2 || "N/A"}) {opt2 || "Not answered"}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
@@ -341,32 +541,45 @@
         );
       }
 
+      // SUBMITTED CONFIRMATION SCREEN
       if (isSubmitted) {
         return (
           <div className="p-6 max-w-md mx-auto text-center space-y-6 pt-20">
             <div className="text-5xl">🎉</div>
-            <h2 className="text-2xl font-bold text-emerald-400">All Done, {currentUser.name}!</h2>
-            <p className="text-slate-300 text-sm">You have completed both Stage 1 and Stage 2. Your responses are locked in for the Council discussion.</p>
-            <button 
-              onClick={() => setView("select_user")}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition"
-            >
-              Return to Main Menu
-            </button>
+            <h2 className="text-2xl font-bold text-emerald-400">Session {activeSessionId} Complete, {currentUser.name}!</h2>
+            <p className="text-slate-300 text-sm">You have completed both Stage 1 and Stage 2 for {SESSIONS.find(s=>s.id===activeSessionId)?.title}.</p>
+            <div className="space-y-2 pt-4">
+              <button 
+                onClick={() => setView("select_user")}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition"
+              >
+                Return to Session Selection
+              </button>
+              <button 
+                onClick={() => setView("dashboard")}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm border border-slate-700 transition"
+              >
+                Open Best Man Dashboard
+              </button>
+            </div>
           </div>
         );
       }
 
-      if (questions.length === 0) {
-        return <div className="p-12 text-center text-slate-400 animate-pulse">Initializing questions database...</div>;
+      if (sessionQuestions.length === 0) {
+        return <div className="p-12 text-center text-slate-400 animate-pulse">Loading Session {activeSessionId} questions...</div>;
       }
 
-      const currentQ = questions[currentQIndex];
+      const currentQ = sessionQuestions[currentQIndex];
 
+      // MAIN QUIZ ASSESSOR SCREEN
       return (
-        <div className="p-6 max-w-md mx-auto space-y-6 pt-8">
+        <div className="p-6 max-w-md mx-auto space-y-6 pt-6">
           <div className="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-3">
-            <span>User: <strong className="text-white">{currentUser.name}</strong></span>
+            <div>
+              User: <strong className="text-white">{currentUser.name}</strong>
+              <div className="text-[10px] text-blue-400">Session {activeSessionId}</div>
+            </div>
             <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-blue-300 font-semibold">
               {stage === 1 ? "Stage 1: Your Answer" : `Stage 2: Predict ${currentUser.spouseName}`}
             </span>
@@ -375,7 +588,7 @@
           <div className="space-y-1">
             <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider">{currentQ.category}</div>
             <div className="flex justify-between text-xs text-slate-500">
-              <span>Question {currentQIndex + 1} of {questions.length}</span>
+              <span>Question {currentQIndex + 1} of {sessionQuestions.length}</span>
             </div>
           </div>
 
@@ -409,8 +622,8 @@
                 : "bg-slate-800 text-slate-500 cursor-not-allowed"
             }`}
           >
-            {currentQIndex === questions.length - 1 
-              ? (stage === 1 ? "Complete Stage 1 & Move to Stage 2 →" : "Submit Final Assessment ✔") 
+            {currentQIndex === sessionQuestions.length - 1 
+              ? (stage === 1 ? `Complete Stage 1 & Move to Predict ${currentUser.spouseName} →` : `Submit Session ${activeSessionId} Assessment ✔`) 
               : "Next Question →"}
           </button>
         </div>
@@ -420,4 +633,4 @@
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
-</html>
+  </html>
