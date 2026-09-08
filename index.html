@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen">
   <div id="root"></div>
 
   <script type="text/babel" data-type="module">
@@ -39,47 +39,221 @@
       { id: "u4", name: "Christine", role: "Bride", spouseId: "u3", spouseName: "Mugo" }
     ];
 
+    const DEFAULT_QUESTIONS = [
+      {
+        id: "q1",
+        category: "Conflict Resolution",
+        text: "When a heated disagreement arises between us, what is your immediate instinct?",
+        options: [
+          { key: "A", label: "Address it immediately, even if emotions are high." },
+          { key: "B", label: "Take time alone to process before discussing calmly." },
+          { key: "C", label: "Concede quickly to keep the peace and move past it." },
+          { key: "D", label: "Seek third-party counsel or mediation." }
+        ]
+      },
+      {
+        id: "q2",
+        category: "Financial Preferences",
+        text: "If an unexpected financial bonus arrives, what is your primary preference?",
+        options: [
+          { key: "A", label: "Put 100% into long-term savings or investments." },
+          { key: "B", label: "Allocate it for a shared trip or memory-making experience." },
+          { key: "C", label: "Split it 50/50 between savings and personal enjoyment." },
+          { key: "D", label: "Pay off debt or make immediate household upgrades." }
+        ]
+      },
+      {
+        id: "q3",
+        category: "In-Law & Extended Family Boundaries",
+        text: "How should major decisions involving extended family or in-laws be handled?",
+        options: [
+          { key: "A", label: "Strict privacy—decide together first before involving family." },
+          { key: "B", label: "Seek advice from elders/parents before finalizing." },
+          { key: "C", label: "Handle each situation on a case-by-case basis." },
+          { key: "D", label: "Allow each spouse to handle their own biological family." }
+        ]
+      },
+      {
+        id: "q4",
+        category: "Roles & Household Expectations",
+        text: "How should daily household responsibilities be divided?",
+        options: [
+          { key: "A", label: "Strict 50/50 division regardless of working hours." },
+          { key: "B", label: "Flexibly based on whoever has more energy/time that day." },
+          { key: "C", label: "Based on traditional roles or personal strengths." },
+          { key: "D", label: "Outsource chores where feasible to save time." }
+        ]
+      },
+      {
+        id: "q5",
+        category: "Emotional Intimacy & Communication",
+        text: "When you are feeling stressed or overwhelmed, what do you need most from your spouse?",
+        options: [
+          { key: "A", label: "Practical problem-solving and actionable solutions." },
+          { key: "B", label: "Silent presence and physical affection without talking." },
+          { key: "C", label: "A listening ear and emotional validation." },
+          { key: "D", label: "Space to handle it independently." }
+        ]
+      },
+      {
+        id: "q6",
+        category: "Social Life & Personal Space",
+        text: "How much independent social time outside the marriage is healthy?",
+        options: [
+          { key: "A", label: "Minimal—almost all social events should be done together." },
+          { key: "B", label: "Regular independent outings with close friends are essential." },
+          { key: "C", label: "Balanced—1 or 2 solo social events per month." },
+          { key: "D", label: "Spontaneous as individual opportunities arise." }
+        ]
+      },
+      {
+        id: "q7",
+        category: "Parenting & Discipline",
+        text: "When it comes to future parenting and discipline, what is your core philosophy?",
+        options: [
+          { key: "A", label: "Strict structure, clear rules, and firm boundaries." },
+          { key: "B", label: "Gentle, conversational guidance and high flexibility." },
+          { key: "C", label: "United front always—never disagree in front of kids." },
+          { key: "D", label: "Follow the framework we experienced growing up." }
+        ]
+      },
+      {
+        id: "q8",
+        category: "Career & Ambition",
+        text: "If a major career opportunity requires significant overtime or relocation, how do we decide?",
+        options: [
+          { key: "A", label: "Prioritize career growth if the financial yield is high." },
+          { key: "B", label: "Prioritize family stability and decline if it disrupts home life." },
+          { key: "C", label: "Take turns supporting each other's career seasons." },
+          { key: "D", label: "Only proceed if both partners are 100% enthusiastic." }
+        ]
+      },
+      {
+        id: "q9",
+        category: "Spiritual & Values Alignment",
+        text: "How should spiritual or faith practices be structured in our household?",
+        options: [
+          { key: "A", label: "Daily joint devotionals and active community leadership." },
+          { key: "B", label: "Weekly church attendance with personal private faith." },
+          { key: "C", label: "Flexible—let faith express naturally without rigid routines." },
+          { key: "D", label: "Focus primarily on practical moral values over routines." }
+        ]
+      },
+      {
+        id: "q10",
+        category: "Quality Time",
+        text: "What constitutes meaningful quality time for you?",
+        options: [
+          { key: "A", label: "Deep 1-on-1 conversations without screens." },
+          { key: "B", label: "Doing shared activities or hobbies together." },
+          { key: "C", label: "Relaxing in the same room while doing separate things." },
+          { key: "D", label: "Going on planned date nights out of the house." }
+        ]
+      },
+      {
+        id: "q11",
+        category: "Financial Transparency",
+        text: "How should bank accounts and major purchases be managed?",
+        options: [
+          { key: "A", label: "Fully joint accounts—all income combined." },
+          { key: "B", label: "Separate accounts with a joint account for shared bills." },
+          { key: "C", label: "Joint account for everything plus personal allowance accounts." },
+          { key: "D", label: "Consult each other only on purchases over a set amount." }
+        ]
+      },
+      {
+        id: "q12",
+        category: "Apology & Forgiveness",
+        text: "What makes an apology feel sincere to you?",
+        options: [
+          { key: "A", label: "Explicitly stating 'I was wrong' and asking forgiveness." },
+          { key: "B", label: "Demonstrated change in behavior over time." },
+          { key: "C", label: "A thoughtful gesture or act of service to restore harmony." },
+          { key: "D", label: "An immediate, calm explanation of why it happened." }
+        ]
+      }
+    ];
+
     function App() {
       const [view, setView] = React.useState("select_user");
       const [currentUser, setCurrentUser] = React.useState(null);
-      const [stage, setStage] = React.useState(1);
+      const [stage, setStage] = React.useState(1); // 1 = Self, 2 = Predict Partner
+      const [questions, setQuestions] = React.useState([]);
+      const [currentQIndex, setCurrentQIndex] = React.useState(0);
       const [answers, setAnswers] = React.useState({});
       const [allResponses, setAllResponses] = React.useState([]);
-      const [questions, setQuestions] = React.useState([]);
+      const [isSubmitted, setIsSubmitted] = React.useState(false);
 
       React.useEffect(() => {
         const unsubResponses = onSnapshot(collection(db, "responses"), (snapshot) => {
           setAllResponses(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
         });
-        const unsubQuestions = onSnapshot(collection(db, "questions"), (snapshot) => {
-          setQuestions(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+
+        const unsubQuestions = onSnapshot(collection(db, "questions"), async (snapshot) => {
+          const qData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          if (qData.length === 0) {
+            for (const q of DEFAULT_QUESTIONS) {
+              await setDoc(doc(db, "questions", q.id), q);
+            }
+          } else {
+            setQuestions(qData.sort((a,b) => a.id.localeCompare(b.id, undefined, {numeric: true})));
+          }
         });
+
         return () => { unsubResponses(); unsubQuestions(); };
       }, []);
 
+      const handleSelectOption = (key) => {
+        setAnswers({ ...answers, [questions[currentQIndex].id]: key });
+      };
+
+      const handleNextQuestion = async () => {
+        if (currentQIndex < questions.length - 1) {
+          setCurrentQIndex(currentQIndex + 1);
+        } else {
+          // Save Stage to Firebase
+          const docId = `${currentUser.id}_stage${stage}`;
+          await setDoc(doc(db, "responses", docId), {
+            userId: currentUser.id,
+            userName: currentUser.name,
+            stage: stage,
+            answers: answers,
+            updatedAt: new Date().toISOString()
+          });
+
+          if (stage === 1) {
+            setStage(2);
+            setCurrentQIndex(0);
+            setAnswers({});
+          } else {
+            setIsSubmitted(true);
+          }
+        }
+      };
+
       if (view === "select_user") {
         return (
-          <div className="p-6 max-w-md mx-auto text-center space-y-6 pt-16">
+          <div className="p-6 max-w-md mx-auto text-center space-y-6 pt-12">
             <h1 className="text-3xl font-extrabold text-blue-400">Marriage Council</h1>
-            <p className="text-slate-400">Select your profile to start:</p>
+            <p className="text-slate-400 text-sm">Select your profile to begin the assessment:</p>
             <div className="space-y-3">
               {PROFILES.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { setCurrentUser(p); setView("quiz"); }}
-                  className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-left flex justify-between items-center"
+                  onClick={() => { setCurrentUser(p); setView("quiz"); setStage(1); setCurrentQIndex(0); setAnswers({}); setIsSubmitted(false); }}
+                  className="w-full p-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-left flex justify-between items-center transition"
                 >
                   <div>
-                    <div className="font-bold text-lg">{p.name}</div>
+                    <div className="font-bold text-lg text-white">{p.name}</div>
                     <div className="text-xs text-slate-400">{p.role}</div>
                   </div>
-                  <span className="text-blue-400 text-sm font-semibold">Select →</span>
+                  <span className="text-blue-400 text-sm font-semibold">Start →</span>
                 </button>
               ))}
             </div>
             <button 
               onClick={() => setView("dashboard")}
-              className="mt-6 text-xs text-slate-500 underline hover:text-slate-300"
+              className="mt-8 text-xs text-slate-500 underline hover:text-slate-300"
             >
               Open Best Man Dashboard
             </button>
@@ -91,28 +265,69 @@
         return (
           <div className="p-6 max-w-4xl mx-auto space-y-6">
             <div className="flex justify-between items-center border-b border-slate-700 pb-4">
-              <h1 className="text-2xl font-bold text-blue-400">Best Man Dashboard</h1>
-              <button onClick={() => setView("select_user")} className="px-3 py-1 bg-slate-800 text-xs rounded border border-slate-700">Exit</button>
+              <div>
+                <h1 className="text-2xl font-bold text-blue-400">Best Man Dashboard</h1>
+                <p className="text-xs text-slate-400">Live Assessment Tracking</p>
+              </div>
+              <button onClick={() => setView("select_user")} className="px-4 py-2 bg-slate-800 text-xs rounded-lg border border-slate-700 hover:bg-slate-700">Exit Dashboard</button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {PROFILES.map((p) => {
-                const s1 = allResponses.some((r) => r.userId === p.id && r.stage === 1);
-                const s2 = allResponses.some((r) => r.userId === p.id && r.stage === 2);
+                const s1 = allResponses.find((r) => r.userId === p.id && r.stage === 1);
+                const s2 = allResponses.find((r) => r.userId === p.id && r.stage === 2);
+                
+                // Calculate prediction score if both spouses completed
+                let score = null;
+                const spouseResp = allResponses.find((r) => r.userId === p.spouseId && r.stage === 1);
+                if (s2 && spouseResp) {
+                  let matches = 0;
+                  let total = 0;
+                  Object.keys(s2.answers).forEach((qId) => {
+                    if (spouseResp.answers[qId]) {
+                      total++;
+                      if (s2.answers[qId] === spouseResp.answers[qId]) matches++;
+                    }
+                  });
+                  if (total > 0) score = Math.round((matches / total) * 100);
+                }
+
                 return (
-                  <div key={p.id} className="p-4 bg-slate-800 rounded-xl border border-slate-700 space-y-2">
-                    <h3 className="font-bold text-white">{p.name}</h3>
-                    <p className="text-xs text-slate-400">Stage 1: {s1 ? "✅ Done" : "⏳ Pending"}</p>
-                    <p className="text-xs text-slate-400">Stage 2: {s2 ? "✅ Done" : "⏳ Pending"}</p>
+                  <div key={p.id} className="p-5 bg-slate-800 rounded-xl border border-slate-700 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-lg text-white">{p.name} <span className="text-xs text-slate-400">({p.role})</span></h3>
+                        <p className="text-xs text-slate-400">Partner: {p.spouseName}</p>
+                      </div>
+                      {score !== null && (
+                        <div className="text-right">
+                          <div className="text-xl font-black text-emerald-400">{score}%</div>
+                          <div className="text-[10px] text-slate-400">Predict Accuracy</div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span>Stage 1 (Self Assessment):</span>
+                        <span className={s1 ? "text-emerald-400 font-bold" : "text-amber-400"}>{s1 ? "✅ Complete" : "⏳ Pending"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Stage 2 (Predict {p.spouseName}):</span>
+                        <span className={s2 ? "text-emerald-400 font-bold" : "text-amber-400"}>{s2 ? "✅ Complete" : "⏳ Pending"}</span>
+                      </div>
+                    </div>
+
                     <button 
                       onClick={async () => {
-                        if (confirm(`Reset ${p.name}?`)) {
+                        if (confirm(`Reset all responses for ${p.name}?`)) {
                           await deleteDoc(doc(db, "responses", `${p.id}_stage1`));
                           await deleteDoc(doc(db, "responses", `${p.id}_stage2`));
                         }
                       }}
-                      className="w-full mt-2 py-1 bg-rose-900/40 text-rose-300 border border-rose-800 rounded text-xs"
+                      className="w-full mt-2 py-1.5 bg-rose-900/30 text-rose-300 hover:bg-rose-900/50 border border-rose-800 rounded-lg text-xs transition"
                     >
-                      Reset
+                      Reset Progress
                     </button>
                   </div>
                 );
@@ -122,10 +337,83 @@
         );
       }
 
-      return <div className="p-6 text-center text-slate-400">Loading or Quiz View Active...</div>;
+      if (isSubmitted) {
+        return (
+          <div className="p-6 max-w-md mx-auto text-center space-y-6 pt-20">
+            <div className="text-5xl">🎉</div>
+            <h2 className="text-2xl font-bold text-emerald-400">All Done, {currentUser.name}!</h2>
+            <p className="text-slate-300 text-sm">You have completed both Stage 1 and Stage 2. Your responses are locked in for the Council discussion.</p>
+            <button 
+              onClick={() => setView("select_user")}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition"
+            >
+              Return to Main Menu
+            </button>
+          </div>
+        );
+      }
+
+      if (questions.length === 0) {
+        return <div className="p-12 text-center text-slate-400 animate-pulse">Initializing questions database...</div>;
+      }
+
+      const currentQ = questions[currentQIndex];
+
+      return (
+        <div className="p-6 max-w-md mx-auto space-y-6 pt-8">
+          <div className="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-3">
+            <span>User: <strong className="text-white">{currentUser.name}</strong></span>
+            <span className="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-blue-300 font-semibold">
+              {stage === 1 ? "Stage 1: Your Answer" : `Stage 2: Predict ${currentUser.spouseName}`}
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-xs text-blue-400 font-semibold uppercase tracking-wider">{currentQ.category}</div>
+            <div className="flex justify-between text-xs text-slate-500">
+              <span>Question {currentQIndex + 1} of {questions.length}</span>
+            </div>
+          </div>
+
+          <h2 className="text-lg font-bold text-white leading-snug">{currentQ.text}</h2>
+
+          <div className="space-y-3 pt-2">
+            {currentQ.options.map((opt) => {
+              const selected = answers[currentQ.id] === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => handleSelectOption(opt.key)}
+                  className={`w-full p-4 text-left rounded-xl border text-sm transition ${
+                    selected 
+                      ? "bg-blue-600/20 border-blue-500 text-white font-semibold" 
+                      : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750"
+                  }`}
+                >
+                  <span className="inline-block w-6 font-bold text-blue-400">{opt.key}.</span> {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            disabled={!answers[currentQ.id]}
+            onClick={handleNextQuestion}
+            className={`w-full py-4 rounded-xl font-bold text-sm transition ${
+              answers[currentQ.id]
+                ? "bg-blue-600 hover:bg-blue-500 text-white"
+                : "bg-slate-800 text-slate-500 cursor-not-allowed"
+            }`}
+          >
+            {currentQIndex === questions.length - 1 
+              ? (stage === 1 ? "Complete Stage 1 & Move to Stage 2 →" : "Submit Final Assessment ✔") 
+              : "Next Question →"}
+          </button>
+        </div>
+      );
     }
 
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
-</html>
+  </html>
