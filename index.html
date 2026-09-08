@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marriage Council Assessment</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,21 +15,26 @@
   <script type="text/babel" data-type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection 
+      initializeFirestore, doc, setDoc, deleteDoc, onSnapshot, collection 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ⚠️ REPLACE WITH YOUR FIREBASE CONFIG KEYS FROM STEP 1 ⚠️
+    // Your actual Firebase configuration
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBsy2DcwsjWxMUGH_e6-1F4FxVNxFITZf8",
+      authDomain: "marriage-council-app.firebaseapp.com",
+      projectId: "marriage-council-app",
+      storageBucket: "marriage-council-app.firebasestorage.app",
+      messagingSenderId: "157246589009",
+      appId: "1:157246589009:web:1f9e34b7d993d96f1a9070",
+      measurementId: "G-WV38K7EJDK"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    
+    // Forcing long-polling bypasses corporate firewall blocks on WebChannels
+    const db = initializeFirestore(app, {
+      experimentalForceLongPolling: true
+    });
 
     const PROFILES = [
       { id: "u1", name: "Timothy", role: "Best Man", spouseId: "u2", spouseName: "Ciku" },
@@ -177,7 +181,7 @@
     function App() {
       const [view, setView] = React.useState("select_user");
       const [currentUser, setCurrentUser] = React.useState(null);
-      const [stage, setStage] = React.useState(1); // 1 = Self, 2 = Predict Partner
+      const [stage, setStage] = React.useState(1);
       const [questions, setQuestions] = React.useState([]);
       const [currentQIndex, setCurrentQIndex] = React.useState(0);
       const [answers, setAnswers] = React.useState({});
@@ -208,19 +212,20 @@
       };
 
       const handleNextQuestion = async () => {
-        if (currentQIndex < questions.length - 1) {
-          setCurrentQIndex(currentQIndex + 1);
-        } else {
-          // Save Stage to Firebase
-          const docId = `${currentUser.id}_stage${stage}`;
-          await setDoc(doc(db, "responses", docId), {
-            userId: currentUser.id,
-            userName: currentUser.name,
-            stage: stage,
-            answers: answers,
-            updatedAt: new Date().toISOString()
-          });
+        const docId = `${currentUser.id}_stage${stage}`;
+        
+        // Save in background so UI never freezes
+        setDoc(doc(db, "responses", docId), {
+          userId: currentUser.id,
+          userName: currentUser.name,
+          stage: stage,
+          answers: answers,
+          updatedAt: new Date().toISOString()
+        }, { merge: true }).catch(e => console.error(e));
 
+        if (currentQIndex < questions.length - 1) {
+          setCurrentQIndex(prev => prev + 1);
+        } else {
           if (stage === 1) {
             setStage(2);
             setCurrentQIndex(0);
@@ -277,7 +282,6 @@
                 const s1 = allResponses.find((r) => r.userId === p.id && r.stage === 1);
                 const s2 = allResponses.find((r) => r.userId === p.id && r.stage === 2);
                 
-                // Calculate prediction score if both spouses completed
                 let score = null;
                 const spouseResp = allResponses.find((r) => r.userId === p.spouseId && r.stage === 1);
                 if (s2 && spouseResp) {
@@ -416,4 +420,4 @@
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
-  </html>
+</html>
